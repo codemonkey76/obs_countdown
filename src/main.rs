@@ -63,8 +63,10 @@ fn replace_with_text(file: &mut std::fs::File, text: &str) -> Result<(), Box<dyn
 
 fn open_file(filename: &str) -> Result<std::fs::File, Box<dyn std::error::Error>> {
     let path = Path::new(filename);
-    if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir)?;
+    let parent = path.parent().ok_or("Invalid path")?;
+
+    if !parent.is_dir() {
+        prompt_directory_creation(&parent)?;
     }
 
     let file = OpenOptions::new()
@@ -72,4 +74,19 @@ fn open_file(filename: &str) -> Result<std::fs::File, Box<dyn std::error::Error>
         .create(true)
         .open(filename)?;
     Ok(file)
+}
+
+fn prompt_directory_creation(dir: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    if !dir.exists() {
+        println!("Directory {} does not exist. Create it? [y/N]", dir.display());
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        if input.trim().to_lowercase() == "y" {
+            std::fs::create_dir_all(dir)?;
+        } else {
+            println!("Aborting.");
+            process::exit(1);
+        }
+    }
+    Ok(())
 }
