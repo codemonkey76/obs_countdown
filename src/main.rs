@@ -19,7 +19,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    match start_countdown(args.filename, args.countdown) {
+    match start_countdown(&args.filename, args.countdown) {
         Ok(_) => {
             println!("Countdown complete!")
         },
