@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::fs::OpenOptions;
+use std::path::Path;
 use std::process;
 use std::io::{SeekFrom, Seek, Write};
 use chrono::{Local, Duration};
@@ -61,8 +62,14 @@ fn replace_with_text(file: &mut std::fs::File, text: &str) -> Result<(), Box<dyn
 }
 
 fn open_file(filename: &str) -> Result<std::fs::File, Box<dyn std::error::Error>> {
+    let path = Path::new(filename);
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+
     let file = OpenOptions::new()
         .write(true)
+        .create(true)
         .open(filename)?;
     Ok(file)
 }
