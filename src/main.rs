@@ -35,6 +35,7 @@ fn start_countdown(filename: &str, countdown: u8) -> Result<(), Box<dyn std::err
     let finish_time = Local::now() + Duration::minutes(countdown as i64);
 
     let mut file = open_file(filename)?;
+    let mut last = String::new();
 
     loop {
         let now = Local::now();
@@ -46,9 +47,12 @@ fn start_countdown(filename: &str, countdown: u8) -> Result<(), Box<dyn std::err
         let time_left = finish_time - now;
         let time_left_string = format!("{:0>2}:{:0>2}", time_left.num_minutes(), time_left.num_seconds() % 60);
 
-        replace_with_text(&mut file, &time_left_string)?;
+        if last != time_left_string {
+            replace_with_text(&mut file, &time_left_string)?;
+        }
 
-        std::thread::sleep(std::time::Duration::from_millis(250));
+        last = time_left_string.clone();
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
     Ok(())
 }
